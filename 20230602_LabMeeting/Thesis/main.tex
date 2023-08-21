@@ -1,0 +1,62 @@
+\documentclass[a4paper, 10pt, twocolumn]{article}
+
+\usepackage{bachelorproject}
+
+\usepackage{kotex}
+
+\usepackage{lipsum}  
+
+\usepackage{cleveref}
+
+% \usepackage{tabularx}
+% \usepackage{tablefootnote}
+% \usepackage{threeparttable}
+\usepackage{enumitem}
+\usepackage{nicematrix}
+
+\usepackage{caption}
+\usepackage{subcaption}
+
+
+\usepackage[
+backend=biber,
+style=authoryear-icomp,
+maxbibnames=9,maxcitenames=2,
+sorting=nty
+]{biblatex}
+\addbibresource{literature.bib}
+
+% \let\oldref\ref
+% \renewcommand{\ref}[1]{(\oldref{#1})}
+
+\title{Reconstruction of Coronal Magnetic Fields \\ Using Physics-Informed Neural Networks}
+\author{전민규 \\ mgjeon@khu.ac.kr}
+
+\makeatletter
+\setlength{\@fptop}{0pt}
+\makeatother
+
+\begin{document}
+
+\input{titlepage}
+
+\twocolumn[
+  \maketitle
+  \begin{@twocolumnfalse}
+    \input{0_abstract.tex}
+  \end{@twocolumnfalse}
+]
+
+\input{1_introduction.tex}
+\input{2_theory.tex}
+\input{3_methods.tex}
+\input{4_results.tex}
+\input{5_conclusions.tex}
+
+\printbibliography
+
+
+% \bibliographystyle{plainnat}
+% \bibliography{literature}
+
+\end{document}

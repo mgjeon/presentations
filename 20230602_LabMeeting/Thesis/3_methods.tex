@@ -1,0 +1,73 @@
+% !TEX root = main.tex
+
+\section{Methods}
+% The size of the bottom boundary is determined by the size of SHARPs (Space-weather HMI Active Region Patches) \parencite{bobra2014helioseismic}, the photospheric magnetic field observation data.
+
+% \begin{algorithm}[h]
+% \caption{Calculate $y = x^n$}
+% \begin{algorithmic}
+% \REQUIRE $n \geq 0 \vee x \neq 0$
+% \ENSURE $y = x^n$
+% \STATE $y \Leftarrow 1$
+% \IF{$n < 0$}
+% \STATE $X \Leftarrow 1 / x$
+% \STATE $N \Leftarrow -n$
+% \ELSE
+% \STATE $X \Leftarrow x$
+% \STATE $N \Leftarrow n$
+% \ENDIF
+% \WHILE{$N \neq 0$}
+% \IF{$N$ is even}
+% \STATE $X \Leftarrow X \times X$
+% \STATE $N \Leftarrow N / 2$
+% \ELSE[$N$ is odd]
+% \STATE $y \Leftarrow y \times X$
+% \STATE $N \Leftarrow N - 1$
+% \ENDIF
+% \ENDWHILE
+% \end{algorithmic}
+% \end{algorithm}
+
+% \lipsum[11-15]
+% \parencite{jarolim2022nf2}
+
+The neural network architecture utilized in this study is a 9-layer feedforward neural network with 8 hidden layers, each containing 256 neurons. For simplicity, let us consider the case where the batch size is one. In this case, the input $\boldsymbol{x} \in \mathbb{R}^3$ represents the position vector within the computational domain $V$. The components of $\boldsymbol{x}$ correspond to the Cartesian coordinates of the position. The output $\mathbf{\hat{B}}=\mathcal{N}^{9}(\boldsymbol{x}; \boldsymbol{\theta}) \in \mathbb{R}^{3}$ represents the mangetic field vector at the position $\boldsymbol{x}$. The activation function $\sigma$ employed in this neural network is the sine function:
+\begin{align*}
+    \text{input layer} &: \mathcal{N}^{0}(\boldsymbol{x}) = \boldsymbol{x} \in \mathbb{R}^{3}, \\
+    \text{hidden layer} &: \mathcal{N}^{\ell}(\boldsymbol{x}) = \sin(\boldsymbol{W}^{\ell}\mathcal{N}^{\ell-1}(\boldsymbol{x}) + \mathbf{b}^{\ell}) \in \mathbb{R}^{256} \\ & \quad \text{for} \quad 1 \le \ell \le 8, \\
+    \text{output layer} &: \mathcal{N}^{9}(\boldsymbol{x}) = \boldsymbol{W}^{9} \mathcal{N}^{8}(\boldsymbol{x}) + \mathbf{b}^{9} \in \mathbb{R}^{3}
+\end{align*}
+
+The total number of parameters, denoted as $\{\boldsymbol{W}^{\ell}, \mathbf{b}^{\ell}\}_{1 \le \ell \le 9}$, in this neural network architecture is $528,131=(3\times256 + 256) + 8\times(256\times256 + 256) + (256\times3 + 3)$. Evidently, the parameter space where the optmization will be conducted is very high dimensional space, i.e., 528131-dimensional space. Therefore, the loss of the physics-informed neural network method does not monotonically decrease, which is a fundamental drawback of the neural network. It is worth noting that the loss of traditional optimization methods for calculating nonlinear force-free fields, as explained in \cref{sec:nlfff}, monotonically decreases when specific conditions are satisfied.
+
+There is already a \emph{loss function} for the nonlinear force-free calculation problem. That is, the functional $L$ in the optimization method (\Cref{eq:optL}) can be used as the loss function. The computational domain $V$ is the rectangular domain whose bottom boundaryy ($z=0$) is the photosphere and $\mathbf{\hat{z}}$ is directed to the outside the photosphere. The loss function $\mathcal{L}_f$ for the partial differential equations is
+\begin{equation*}
+    \mathcal{L}_f(\boldsymbol{\theta}; \mathcal{T}_f) = \frac{1}{|\mathcal{T}_f|} \sum_{\boldsymbol{x}\in \mathcal{T}_f} \left[\frac{|(\nabla \times \mathbf{\hat{B}})\times \mathbf{\hat{B}}|^2}{|\mathbf{\hat{B}}|^2} + |\nabla \cdot \mathbf{\hat{B}}|^2 \right],
+\end{equation*}
+where $\mathbf{\hat{B}}=\mathcal{N}^9(\boldsymbol{x}; \boldsymbol{\theta})$ is the output of the neural network, or the mangetic field calculated at the point $\boldsymbol{x}$ by the neural network $\mathcal{N}^9$. The loss function $\mathcal{L}_b$ for the boundary condition can be written as 
+\begin{equation*}
+    \mathcal{L}_b(\boldsymbol{\theta};\mathcal{T}_b)=\frac{1}{|\mathcal{T}_b|}\sum_{\boldsymbol{x}\in\mathcal{T}_b}{|\mathbf{\hat{B}}-\mathbf{B}|^2},
+\end{equation*}
+where $\mathcal{T}_b$ is a subset of the boundary of the computational domain $V$, i.e., $\mathcal{T}_b \in \partial V$ and $\mathbf{B}$ is the given magnetic field at the boundary $\partial V$.
+
+The PDE loss function $\mathcal{L}_f$ is divided into two terms as follows:
+\begin{equation*}
+    \mathcal{L}_f(\boldsymbol{\theta}; \mathcal{T}_f) = w_{\text{ff}}\mathcal{L}_\text{ff}(\boldsymbol{\theta}; \mathcal{T}_f) + w_{\text{div}}\mathcal{L}_\text{div}(\boldsymbol{\theta}; \mathcal{T}_f)
+\end{equation*}
+with certain weights $w_{\text{ff}}$ and $w_{\text{div}}$. The loss functions $\mathcal{L}_\text{ff}$ and $\mathcal{L}_\text{div}$ refer to the force-free condition and the solenoidal condition, respectively. The definitions of these loss functions are
+\begin{equation*}
+    \mathcal{L}_\text{ff}(\boldsymbol{\theta}; \mathcal{T}_f) = \frac{1}{|\mathcal{T}_f|} \sum_{\boldsymbol{x}\in \mathcal{T}_f} \frac{|(\nabla \times \mathbf{\hat{B}})\times \mathbf{\hat{B}}|^2}{|\mathbf{\hat{B}}|^2},
+\end{equation*}
+\begin{equation*}
+    \mathcal{L}_\text{div}(\boldsymbol{\theta}; \mathcal{T}_f) = \frac{1}{|\mathcal{T}_f|} \sum_{\boldsymbol{x}\in \mathcal{T}_f} |\nabla \cdot \mathbf{\hat{B}}|^2.
+\end{equation*}
+
+The total loss function $\mathcal{L}$ is
+\begin{align*}
+    \mathcal{L}_f(\boldsymbol{\theta}; \mathcal{T}_f, \mathcal{T}_b) & = w_{\text{ff}}\mathcal{L}_\text{ff}(\boldsymbol{\theta}; \mathcal{T}_f) + w_{\text{div}}\mathcal{L}_\text{div}(\boldsymbol{\theta}; \mathcal{T}_f) \\ & + w_b\mathcal{L}_b(\boldsymbol{\theta}; \mathcal{T}_b),
+\end{align*}
+where $w_b$ is a certain weight for the boundary condition loss function $\mathcal{L}_b$.
+
+The performance of a numerical method only can be correctly evaluated if it is applied to the analytical solution. If the numerical method is able to reconstruct the analytical solution with boundary condition provided by that analytical solution, it satisfies the essential minimum requirement. For the nonlinear force-free field problem, there are two popular semi-analytical solutions: Low-Lou (LL) model proposed by \parencite{low1990modeling} and Titov-D\'emoulin (TD) model introduced by \parencite{titov1999basic}. In this thesis, the LL model is only employed to evaluate the performance of the physics-informed neural network method. However, future research may consider utilizing the TD model as a reference model.
+
+The LL model used in this study is defined by four parameters $(n, m, l, \Phi)$. For the reference field, I employed the LL model with $(n=1, m=1, l=0.3, \Phi=\pi/2)$. The computational domain was a $(64\times64\times64)$ Cartesian box. The bottom boundary condition was given by the LL model, while the top and lateral boundary conditions were determined by the potential fields calculated using the Green's function method \parencite{sakurai1982green}, which uses the normal components of magnetic fields at the bottom boundary. The number of total iterations is 50,000 and the model is saved every 100 iterations. The weights assigned to the force-free condition ($w_{\text{ff}}$) and the solenoidal condition ($w_{\text{div}}$) were both 0.1. The weight for the boundary condition ($w_{\text{b}}$), initially set to 1000, exponentially decreased to 1 within the first 25,000 iterations. The optimization process utilized the default Adam optimizer in PyTorch\footnote{\url{https://pytorch.org/docs/stable/generated/torch.optim.Adam.html}}, with $\beta_1 = 0.9$ and $\beta_2 = 0.999$, and a learning rate that exponentially decayed $5\times10^{-4}$ to $5\times10^{-5}$ over the 50,000 iterations. To calculate the nonlinear force-free fields using the physics-informed neural network, I employed the NF2 code developed by \parencite{jarolim2022nf2}. This code is publicly available under the GPLv3 license\footnote{\url{https://github.com/RobertJaro/NF2}}.

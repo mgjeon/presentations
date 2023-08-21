@@ -1,0 +1,100 @@
+% !TEX root = main.tex
+
+\section{Theory}
+
+\subsection{Nonlinear force-free fields}\label{sec:nlfff}
+This section explains the force-free assumption, a popular model for the coronal magnetic field. The most materials in the solar corona is in a fully ionized plasma state due to the high temperature of the corona. The plasma beta $\beta$ of the coronal plasma is quite low, as discussed in \parencite{gary2001plasma}. This means that the plasma pressure gradient force is negligible compared to the magnetic pressure gradient force, which is a part of the Lorentz force in magnetohydrodynamics (MHD). Additionally, the gravitational force exerted on the coronal plasma is small compared to the Lorentz force due to the low mass density of the plasma. As a result, the Lorentz force dominates other forces in the solar corona. Therefore, the momentum equation in the MHD equations for the solar coronal plasma in the Gaussian unit system can be written as
+\begin{equation*}
+    \rho \frac{d\boldsymbol{v}}{dt} = \frac{1}{c}\mathbf{J}\times\mathbf{B},
+\end{equation*}
+where $\rho$ is the mass density of the plasma element, $\boldsymbol{v}$ the center of mass velocity, $\mathbf{J}$ the current density, and $\mathbf{B}$ the magnetic field. 
+
+In most regions of the solar corona, the ideal MHD condition is valid because of the high electrical conductivity of the coronal plasma. This means that the coronal plasma elements are \emph{frozen-in} to the coronal magnetic fields. For the static coronal magnetic fields, the plasma elements must also be static, i.e., have a velocity of zero, meaning that the net force exerted on the plasma elements is zero, which can be expressed as
+\begin{equation*}
+    \mathbf{J}\times\mathbf{B} = \mathbf{0}.
+\end{equation*}
+
+Since the displacement current term in Amp\`ere-Maxwell equation is ignored in MHD, the current density in MHD is given by $\mathbf{J} = \frac{c}{4\pi} \nabla \times \mathbf{B}$ . The static coronal magnetic fields in this force-free assumption should satisfy the following partial differential equations:
+\begin{equation}\label{eq:ff}
+    (\nabla \times \mathbf{B})\times\mathbf{B} = 0,
+\end{equation}
+\begin{equation}\label{eq:div}
+    \nabla \cdot \mathbf{B} = 0.
+\end{equation}
+
+\Cref{eq:ff} is referred to as the force-free equation and \cref{eq:div} is known as the Gauss's law for the magnetic field in Maxwell's equations which is often called the solenoidal condition. The magnetic fields that satisfy the force-free equation are called force-free fields. \Cref{eq:ff} can be rewritten as
+\begin{equation*}
+    \nabla \times \mathbf{B} = \alpha \mathbf{B},
+\end{equation*}
+where $\alpha$ is called the force-free parameter or force-free function. If $\alpha$ is constant everywhere in the computational domain, the magnetic field is called a linear force-free field, otherwise it is called a nonlinear force-free field. A linear force-free field with $\alpha = 0$ is called a potential field. The linear force-free field and its special case potential field are considered incomplete models for the coronal magnetic field because the force-free parameter $\alpha$ is not constant everywhere in the solar corona, even in the small region above a single active region. 
+Therefore, it is crucial to calculate nonlinear force-free fields by solving the force-free equation to accurately describe the coronal magnetic field.
+
+Both the domain $V$ and boundary condition (and/or initial condition) at the boundary $\partial V$ must be specified to solve differential equations. In the case of the force-free field, there is no initial condition to consider because it is a static magnetic field. In order to reconstruct coronal magnetic fields, the computational domain $V$ is taken to be the region above the photosphere. Although the force-free assumption is not valid in the photosphere, the photospheric magnetic field vector is often used as the one of the boundary conditions because it is the only routinely available high-resolution magnetic field vector. In this thesis, the coronal magnetic fields above a single active region are considered. To accomplish this, an artificial photospheric magnetic field vector is generated using the Low-Lou model. Since the typical area of a solar active region is very small compared to the whole solar surface area, the active region can be assumed to be flat. Thus, the computational domain $V$ for the calculation of nonlinear force-free fields above a single active region becomes a rectangular domain whose bottom boundary coincides with the active region.
+
+One popular traditional numerical method for calculating nonlinear force-free fields is the optimization method, which was first proposed by \parencite{wheatland2000optimization}. The main strategy of the optimization method is to minimize the functional $L$ defined as 
+\begin{equation}\label{eq:optL}
+    L = \int_V \left[ \frac{|(\nabla \times \mathbf{B})\times \mathbf{B}|^2}{B^2} + |\nabla \cdot \mathbf{B}|^2 \right] \mathrm{d}V.
+\end{equation}
+
+Since each term of the integrand is always positive, if $L$ is zero for a magnetic field $\mathbf{B}$ in $V$, the magnetic field $\mathbf{B}$ must satisfy both the force-free equation and solenoidal condition everywhere in $V$, i.e., the field is a nonlinear force-free field. Differentiating \cref{eq:optL} with respect to $t$ which is a time-like parameter increasing with the interation steps leads to 
+\begin{equation*}
+    \frac{1}{2} \frac{dL}{dt} = - \int_V \frac{\partial \mathbf{B}}{\partial t}\cdot \tilde{\mathbf{F}} \mathrm{d}V - \oint_{S=\partial V} \frac{\partial \mathbf{B}}{\partial t}\cdot \tilde{\mathbf{G}}\mathrm{d}S,
+\end{equation*}
+where $\tilde{\mathbf{F}}$ and $\tilde{\mathbf{G}}$ are certian vector fields given by the magnetic field $\mathbf{B}$. If $\mathbf{B}$ is updated accroding to 
+\begin{equation*}
+    \frac{\partial \mathbf{B}}{\partial t} = \mu \tilde{\mathbf{F}} \quad \text{in } V,
+\end{equation*}
+where $\mu > 0$ and the boundary condition is fixed at the boundary $S=\partial V$, i.e., 
+\begin{equation*}
+    \frac{\partial{\mathbf{B}}}{\partial t} = 0 \quad \text{at } S=\partial V,
+\end{equation*}
+then the functional $L$ monotonically decreases because
+\begin{equation*}
+\frac{d L}{d t} = - 2\int_V \mu |\tilde{\mathbf{F}}|^2 \mathrm{d}V < 0.
+\end{equation*}
+
+The optimiztion method requires the initial magnetic field $\mathbf{B}$ in the computational domain $V$ and at its boundary $\partial V$. 
+%While the initial magnetic field $\mathbf{B}$ in $V$ can be arbitrary, the boundary condition $\mathbf{B}$ at $\partial V$ cannot. 
+Since the magnetic field observation data is only avaiable at the bottom boundary (photosphere), the boundary condition at top and lateral boundaries is given by the potential magnetic field which can be reconstructed only using normal components at the bottom boundary condition. For convenience, the initial magnetic field for the optimization method is the potential field reconstructed using magnetic field data at the bottom boundary. In contrast, the physics-informed neural network method does not use the potential magnetic field as the initial magnetic field in the domain although the top and lateral boundary conditions are also given by the potential field. Instead, a randomly generated vector field serves as the initial magnetic field in the domain.
+
+% \subsubsection{Low-Lou model}\label{sec:ll}
+% The Low-Lou (LL) model proposed by \parencite{low1990modeling} is ...
+
+% \subsubsection{The magnetic energy of the potential magnetic fields}\label{sec:pot}
+% The magnetic energy of the potential magnetic fields is ...
+
+% \subsubsection{Green's function method}\label{sec:green}
+% The Green's function method is ...
+
+\subsection{Physics-informed neural networks}
+Solving partial differential equations requires the calculation of derivatives using computer. There are four techniques to calculate derivatives in the computer program: manual differentiation, numerical differentiation, symbolic differentiation, and automatic differentiation \parencite{baydin2018automatic, margossian2019review}. The manual differentiation just refers to hard-coded the analytical expression of derviates. It is exact but there are many functions of which derivatives can not be calculated in the analytical approach. The numerical differentiation also known as finite difference method uses the definition of derivatives. The numerical differentiation is widely used to calculate derivatives because it is easy to code. However, it fundamentally has truncation error and it always needs the grid points in the domain, so the mesh must be created to use numerical differentiation. The symbolic differentiation providing the expressions of derivatives is used in computer algebra systems such as SymPy and Mathematica. Although it provides exact expression of derivatives, it can not handle complex functions due to similar problems as the manual differentiation has. The automatic differentiation basically uses the chain rule and the fact that every computation in the computer can be regarded as a calculation of a composite function of basic operations whose derivatives are known. The automatic differentiation is exact and fast compared to other techniques but its computational implementation is not easy although there are many libraries supporting to calculate the automatic differentiation\footnote{\url{https://www.autodiff.org/}}.
+
+Deep learning refers to a class of algorithms which are based on artificial neural networks, simply called neural networks, to solve certain problems. The best output of a neural network $\boldsymbol{\hat{u}} = \mathcal{N}(\boldsymbol{x}; \boldsymbol{\theta})$ is obtained by the process of finding the an appropriate set of parameters $\boldsymbol{\theta}$ to minimize the loss function $\mathcal{L} = \mathcal{L}(\boldsymbol{\hat{u}}; \boldsymbol{\xi})$. This process is mathematically a kind of solving an optimization problem. In the deep learning field, it is said that the neural networks \emph{learn} something from provided data while people \emph{train} the neural networks to update their parameters. There are many architectures of neural networks to solve diverse problems. The feedfoward neural network (FNN) also called multilayer perceptron (MLP) is the simplest neural network. Let $\mathcal{N}^{L}\colon \mathbb{R}^{d_\text{in}} \to \mathbb{R}^{d_\text{out}}$ be an $L$-layer neural network with $N_{\ell}$ neurons in the $\ell$th layer ($N_0 = d_{\text{in}}, \; N_{L} = d_{\text{out}}$). The parameter $\boldsymbol{\theta}$ of the neural network $\mathcal{N}^{L}$ consists of weight matrix $\boldsymbol{W}^{\ell} \in \mathbb{R}^{N_{\ell}\times N_{\ell-1}}$ and the bias vector $\mathbf{b}^{\ell} \in \mathbb{R}^{N_{\ell}}$, i.e., $\boldsymbol{\theta} = \{ \boldsymbol{W}^{\ell}, \mathbf{b}^{\ell}\}_{1 \le \ell \le L}$. For an elementwise nonlinear activation function $\sigma$, the output $\boldsymbol{\hat{u}} = \mathcal{N}^{L}(\boldsymbol{x})$ of the FNN is recursively calculated from the input $\boldsymbol{x}$ as follows \parencite{lu2021deepxde}:
+\begin{align*}
+\text{input layer} &: \mathcal{N}^{0}(\boldsymbol{x}) = \boldsymbol{x} \in \mathbb{R}^{d_{\text{in}}}, \\
+\text{hidden layer} &: \mathcal{N}^{\ell}(\boldsymbol{x}) = \sigma(\boldsymbol{W}^{\ell}\mathcal{N}^{\ell-1}(\boldsymbol{x}) + \mathbf{b}^{\ell}) \in \mathbb{R}^{N_{\ell}} \\ & \quad \text{for} \quad 1 \le \ell \le L-1, \\
+\text{output layer} &: \mathcal{N}^{L}(\boldsymbol{x}) = \boldsymbol{W}^{L} \mathcal{N}^{L-1}(\boldsymbol{x}) + \mathbf{b}^{L} \in \mathbb{R}^{d_{\text{out}}}.
+\end{align*}
+
+The training in the deep learning requires to minimize the loss function $\mathcal{L}$ which changes if the paramters $\boldsymbol{\theta}$ of neural networks changes. Since this is an optimization problem, many optimization algorithms are used to conduct this process. The gradient descent method, being the simplest, serves as the foundation for many optimization techniques. The main strategy of the gradient descent method is to determine the gradient of the loss function with respect to the parameters and update the parameters  in the opposite direction of the gradient. Mathematically, it can be expressed as follows:
+\begin{equation*}
+    \boldsymbol{\theta}_{i} \leftarrow \boldsymbol{\theta}_{i} - \eta \nabla_{{\boldsymbol{\theta}}_{i}} \mathcal{L}
+\end{equation*}
+where $\eta$ is called a learning rate (commonly represented by $\alpha$, but $\eta$ is used here to avoid confusion with the force-free parameter) and $i$ refers to an index of each element of the set of parameters $\boldsymbol{\theta}$. Due to the vast number of parameters in neural networks, calculating derivatives becomes computationally intensive. Manual, numerical, and symbolic differentiation methods are inadequate for accurately and efficiently calculating a large number of derivatives. Only automatic differentiation can fix this problem.
+
+There are two modes in the automatic differentiation: forward-mode and reverse-mode. When calculating derivatives of a function $f \colon \mathbb{R}^n \to \mathbb{R}^m$ , the foward-mode automatic differentiation is more efficient if $n < m$ and the reverse-mode automatic differentiation is more efficient if $n > m$ \parencite{baydin2018automatic, margossian2019review}. Since the result of the loss function is a scalar, the reverse-mode automatic differentiation is able to calulate fast many derivatives in the deep learning, which is often called the backpropagation algorithm. Therefore, all modern deep learning libraries such as TensorFlow, PyTorch, and JAX support at least reverse-mode automatic differentiation.
+
+Physics-informed neural networks are neural networks proposed by \parencite{raissi2019physics} to solve partial differential equations. The main idea of PINNs is to train feedforward neural network to make the output of the FNN to be the solution of the given PDEs. 
+Let us consider a PDE $f(\boldsymbol{x}; \mathsf{D}(\boldsymbol{u}); \boldsymbol{\lambda})=0$ in the domain $V$ with the boundary condition (BC) $\mathcal{B}(\boldsymbol{x}; \boldsymbol{u})=0$ at the boundary $\partial V$. The parameters of the PDE are denoted as $\boldsymbol{\lambda}$ and its operator is denoted as $\mathsf{D}$ which includes differential operators with other operations and can be linear or nonlinear. The first step is to construct an FNN $\mathcal{N}$ whose output is $\boldsymbol{\hat{u}} = \mathcal{N}(\boldsymbol{x}; \boldsymbol{\theta})$ with parameter $\boldsymbol{\theta}$. The second step is to create a set of points randomly distributed in the computational domain $V$. Let $\mathcal{T}_{f} \subset V$ be the set of points inside the domain $V$, called collocation points and let  $\mathcal{T}_{b} \subset \partial V$ be the set of points at the boundary. Since the parameter $\boldsymbol{\theta}$ of the FNN is initialized randomly, $\boldsymbol{\hat{u}}$ is of course different from the true solution $\boldsymbol{u}$ which satisfy the given partial differential equation and boundary condition. The third step is to define the loss function $\mathcal{L}=\mathcal{L}(\boldsymbol{\theta};\mathcal{T})$ as a weighted sum of the mean squared errors. This loss function quantifies the discrepancy between $\boldsymbol{\hat{u}}$ and $\boldsymbol{u}$ for the partial differential equation and boundary condition:
+\begin{equation*}
+    \mathcal{L}(\boldsymbol{\theta};\mathcal{T}) = w_{f}\mathcal{L}_{f}(\boldsymbol{\theta}; \mathcal{T}_f) +  w_{b}\mathcal{L}_{b}(\boldsymbol{\theta}; \mathcal{T}_b),
+\end{equation*}
+where
+\begin{equation*}
+    \mathcal{L}_f(\boldsymbol{\theta};\mathcal{T}_f)=\frac{1}{|\mathcal{T}_f|}\sum_{\boldsymbol{x}\in\mathcal{T}_f}{|f(\boldsymbol{x}; \mathsf{D}(\boldsymbol{\hat{u}}); \boldsymbol{\lambda})|^2},
+\end{equation*}
+\begin{equation*}
+    \mathcal{L}_b(\boldsymbol{\theta};\mathcal{T}_b)=\frac{1}{|\mathcal{T}_b|}\sum_{\boldsymbol{x}\in\mathcal{T}_b}{|\mathcal{B}(\boldsymbol{x};\boldsymbol{\hat{u}})|^2}.
+\end{equation*}
+and $w_f$ and $w_b$ are the weights. The operations $\mathsf{D}(\boldsymbol{\hat{u}})$ includes calculating derivatives of $\boldsymbol{\hat{u}}$ with respect to the input $\boldsymbol{x}$ which can be easily calculated via the automatic differentiation implemented in the chosen deep learning library. The last step is to find best paramter $\boldsymbol{\theta}^{*}$ by minimizing the loss function $\mathcal{L}$ using optimizers such as Adam \parencite{kingma2014adam} and L-BFGS \parencite{zhu1995limited}.
+

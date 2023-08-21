@@ -1,0 +1,22 @@
+name: pinf
+channels:
+  - conda-forge
+  - pytorch
+  - nvidia
+dependencies:
+  - python=3.10
+  - numpy
+  - ca-certificates
+  - openssl
+  - scipy
+  - matplotlib
+  - certifi
+  - pytorch
+  - torchvision
+  - torchaudio
+  - pytorch-cuda=11.8
+  - tqdm
+  - astropy
+  - sunpy
+  - pyvista
+  - mayavi
