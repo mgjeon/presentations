@@ -1,0 +1,22 @@
+/*-- scss:defaults --*/
+
+$presentation-font-size-root: "30px" !default;
+$presentation-h1-font-size: "3.0em" !default;
+$presentation-h2-font-size: "1.6em" !default;
+
+/*-- scss:rules --*/
+.quarto-title-author-name {
+    font-size: 1.5em;
+}
+
+// .MathJax_Display {
+//     margin: 0.5em 0 !important;
+// }
+
+// .katex-display {
+//     margin: 0.5em 0 !important;
+// }
+
+// .citation {
+//     font-size: 0.5em;
+// }
